@@ -1,0 +1,17 @@
+[project]
+name = "mlops-g25ait2148-assignment"
+version = "0.1.0"
+description = "MLOps Assignment 2 — Hugging Face fine-tuning, W&B, Hub"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "transformers>=4.41.0,<5",
+    "datasets>=2.19.0",
+    "accelerate>=0.33.0",
+    "evaluate>=0.4.0",
+    "torch>=2.1.0",
+    "scikit-learn>=1.3.0",
+    "wandb>=0.17.0",
+    "huggingface_hub>=0.24.0",
+    "safetensors>=0.4.0",
+]

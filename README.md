@@ -6,16 +6,49 @@ The starter notebook (Google Colab) uses the **UCSD Goodreads** genre setting; t
 
 ## Project layout
 
-| File        | Role |
-|------------|------|
-| `data.py`  | Load data, optional stratified subsample, train/validation/test splits, tokenization, write `processed_data/`. |
+| File | Role |
+|------|------|
+| `data.py` | Load data, optional stratified subsample, train/validation/test splits, tokenization, write `processed_data/`. |
 | `train.py` | Load pre-trained encoder + classification head, `Trainer`, `report_to="wandb"`, optional Hub push. |
-| `eval.py`  | Test-set metrics, explicit `wandb.log` for final loss/accuracy/F1, `eval_report.json` as a W&B Artifact. |
+| `eval.py` | Test-set metrics, explicit `wandb.log` for final loss/accuracy/F1, `eval_report.json` as a W&B Artifact. |
 | `utils.py` | Label map I/O and `compute_metrics` (accuracy + weighted F1). |
+| `requirements.txt` | Dependency list for `pip` (matches what the assignment asks you to push to GitHub). |
+| `pyproject.toml` | Project metadata and dependencies for **[uv](https://docs.astral.sh/uv/)** (same packages as `requirements.txt`). |
+| `uv.lock` | Locked dependency tree produced by `uv lock` (commit to git for reproducible installs). |
 
 ## Setup
 
-Use Python **3.10+** (3.11 or 3.12 recommended). A virtual environment avoids the broken global `pip` state some Windows setups hit.
+Use Python **3.10+** (3.11 or 3.12 recommended).
+
+### Option A: uv (recommended if you use Astral uv)
+
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/). On Windows, if `uv` is not found after install, add it to `PATH` for the current session or open a new terminal:
+
+```powershell
+$env:Path = "C:\Users\helpa\.local\bin;$env:Path"
+```
+
+From the project root:
+
+```powershell
+cd "c:\Users\helpa\Desktop\mlops assignment 2\mlops_g25ait2148_assignment"
+uv lock    # refresh uv.lock from pyproject.toml (after any dependency change)
+uv sync    # create/update .venv and install exactly what uv.lock pins
+.\.venv\Scripts\Activate.ps1
+```
+
+- **`pyproject.toml`** lists direct dependencies; **`uv lock`** resolves the full tree into **`uv.lock`**.
+- If **`uv.lock`** looks almost empty, your `pyproject.toml` had no `dependencies` yet — run `uv lock` again after dependencies are filled in.
+
+You can still install from **`requirements.txt`** with uv if you prefer not to use the lockfile:
+
+```powershell
+uv venv
+.\.venv\Scripts\Activate.ps1
+uv pip install -r requirements.txt
+```
+
+### Option B: venv + pip (no uv)
 
 ```powershell
 cd "c:\Users\helpa\Desktop\mlops assignment 2\mlops_g25ait2148_assignment"
@@ -24,6 +57,8 @@ python -m venv .venv
 pip install -U pip
 pip install -r requirements.txt
 ```
+
+### Auth tokens (any setup)
 
 Authenticate (pick what you use):
 
@@ -90,7 +125,7 @@ Fill this table after you run `eval.py` (values also appear in the W&B run and i
 
 ## Submission checklist (from the assignment brief)
 
-1. Public **GitHub** repo with these scripts + `requirements.txt` + this README.
+1. Public **GitHub** repo with the Python scripts + **`requirements.txt`** + this README. Including **`pyproject.toml`** and **`uv.lock`** is optional but helps others reproduce the same versions with `uv sync`.
 2. Public **Hugging Face** model repo (weights + tokenizer).
 3. **W&B** project visible as **public**, with a training dashboard screenshot in the report.
 4. **PDF report** (4–5 pages): model choice, training + W&B charts, interpretation of metrics, challenges/learnings — and paste the three links (GitHub, HF, W&B).

@@ -1,8 +1,13 @@
-# MLOps Assignment 2 — Hugging Face fine-tuning, W&B, and Hub
+# MLOps Assignment 2 — Fine-tuning + W&B + Hugging Face Hub
 
-This repository implements the course workflow from *Assignment 2* (IIT Jodhpur PGD AI): modular Python scripts for data preparation, training with the Hugging Face `Trainer`, experiment tracking with [Weights & Biases](https://wandb.ai), final evaluation with an artifact, and optional publishing to the [Hugging Face Hub](https://huggingface.co).
+This repo is my submission for *MLOps Assignment 2 (IIT Jodhpur PGD AI)*. It takes the starter Colab notebook workflow and turns it into normal Python scripts you can run from the terminal:
 
-The starter notebook (Google Colab) uses the **UCSD Goodreads** genre setting; these scripts support the same pipeline. For a **fully reproducible quick run** without Drive exports, the default data source is the public **`ag_news`** benchmark (single-label text classification, four classes). To match the assignment narrative in your report, export your Goodreads table from the starter notebook to CSV with columns **`review`** and **`genre`**, then run `data.py` with `--source csv` (see below).
+- prepare data
+- train a Hugging Face model and track it in W&B
+- run final evaluation and save a report
+- (optional but required for marks) push the trained model to the Hugging Face Hub
+
+The starter notebook uses the **UCSD Goodreads** genre dataset. If you don’t have the Goodreads CSV handy, you can still test the full pipeline using the public **`ag_news`** dataset (4 classes). That’s what `--source ag_news` is for.
 
 ## Project layout
 
@@ -18,7 +23,7 @@ The starter notebook (Google Colab) uses the **UCSD Goodreads** genre setting; t
 
 ## Setup
 
-Use Python **3.10+** (3.11 or 3.12 recommended).
+Use Python **3.12**. (Python 3.13 often causes install issues for `torch`/`transformers` on Windows.)
 
 ### Option A: uv (recommended if you use Astral uv)
 
@@ -65,43 +70,50 @@ Authenticate (pick what you use):
 - **W&B**: `wandb login` (or set `WANDB_API_KEY`).
 - **Hugging Face Hub** (for `push_to_hub`): set `HF_TOKEN` or `HUGGING_FACE_HUB_TOKEN` to a write token from [HF settings](https://huggingface.co/settings/tokens).
 
-## How to run (command line)
+## How to run (copy/paste)
 
-**1) Prepare data** — default `ag_news` (good for Colab-like GPU runs or local smoke tests):
+### Quick test run (recommended first)
+
+This is the easiest way to confirm “my code works”.
+
+**Step 1: Prepare data**
 
 ```powershell
-python data.py --source ag_news --sample_per_class 800 --output_dir processed_data
+python main.py prepare --source ag_news --sample_per_class 200 --processed_dir processed_data
 ```
 
-Use **your Goodreads CSV** (from the starter notebook) instead:
+**Step 2: Train (small run)**
+
+```powershell
+wandb login
+python main.py train --processed_dir processed_data --output_dir results --epochs 1 --train_batch_size 8 --eval_batch_size 16 --logging_steps 10 --wandb_project mlops-assignment2 --wandb_run_name smoke-run
+```
+
+**Step 3: Evaluate**
+
+```powershell
+python main.py eval --model_dir results --processed_dir processed_data --wandb_project mlops-assignment2 --wandb_run_name smoke-eval
+```
+
+After Step 3, you will see Accuracy / F1 / Loss in the terminal and you will also get an `eval_report.json` file.
+
+### Using your Goodreads CSV (from the Colab notebook)
+
+If you exported your Goodreads data as a CSV with columns `review` and `genre`:
 
 ```powershell
 python data.py --source csv --csv_path data\goodreads_reviews.csv --text_col review --label_col genre --output_dir processed_data
-```
-
-**2) Train** (creates a W&B run; matches the assignment’s `report_to="wandb"` pattern):
-
-```powershell
 python train.py --processed_dir processed_data --output_dir results --wandb_project mlops-assignment2 --wandb_run_name distilbert-run-1
-```
-
-Optional: push model + tokenizer after training (public repo id `username/repo-name`):
-
-```powershell
-python train.py --hub_model_id YOUR_USERNAME/distilbert-goodreads-genres
-```
-
-**3) Evaluate** on the held-out test split, log final metrics, and upload `eval_report.json`:
-
-```powershell
 python eval.py --model_dir results --processed_dir processed_data --wandb_project mlops-assignment2 --wandb_run_name distilbert-eval-final
 ```
 
-For **CPU-only** smoke tests, reduce data and epochs, for example:
+### Push model to Hugging Face (Task 6)
+
+After training finishes, push the model + tokenizer to your Hugging Face profile:
 
 ```powershell
-python data.py --source ag_news --sample_per_class 200 --output_dir processed_data
-python train.py --epochs 1 --train_batch_size 8 --eval_batch_size 16 --logging_steps 10
+$env:HF_TOKEN="your_huggingface_write_token"
+python train.py --processed_dir processed_data --output_dir results --hub_model_id YOUR_USERNAME/distilbert-goodreads-genres
 ```
 
 ## Pre-trained model (assignment Task 3)
@@ -112,16 +124,16 @@ Default encoder: **`distilbert-base-uncased`** with `AutoModelForSequenceClassif
 
 ## Results
 
-Fill this table after you run `eval.py` (values also appear in the W&B run and in `eval_report.json`).
+Fill this after you run `eval.py` (the numbers will print in the terminal).
 
 | Metric      | Score |
 |------------|-------|
-| Accuracy   | _run `eval.py` and paste `eval_accuracy`_ |
-| F1 (weighted) | _paste `eval_f1`_ |
-| Eval loss  | _paste `eval_loss`_ |
+| Accuracy   | 0.87145 |
+| F1 (weighted) | 0.86951 |
+| Eval loss  | 0.46378 |
 
-- **Hugging Face model:** `https://huggingface.co/<your-username>/<your-repo>` (after `--hub_model_id` push)
-- **W&B project:** `https://wandb.ai/<your-username>/mlops-assignment2`
+- **Hugging Face model:** `https://huggingface.co/tejinder482/distilbert-agnews-smoke` (replace after push)
+- **W&B project:** `https://wandb.ai/tejindersingh2202-indian-institute-of-technology/mlops-assignment2`
 
 ## Submission checklist (from the assignment brief)
 
@@ -132,5 +144,5 @@ Fill this table after you run `eval.py` (values also appear in the W&B run and i
 
 ## Starter notebook
 
-Course notebook (run once in Colab before refactoring):  
+Course notebook (run once in Colab before refactoring):
 [Starter notebook (Google Colab)](https://colab.research.google.com/drive/15yJsCtRu4kgqCLT44Tjhs3SFOT5GITqC?usp=sharing)

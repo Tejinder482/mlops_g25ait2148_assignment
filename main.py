@@ -125,7 +125,7 @@ def _eval_argv(args: argparse.Namespace) -> list[str]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="MLOps assignment pipeline (data → train → eval).",
+        description="MLOps assignment pipeline (data -> train -> eval).",
         epilog="Examples:\n"
         "  python main.py prepare --source ag_news --sample_per_class 800\n"
         "  python main.py train --epochs 3\n"
@@ -144,7 +144,7 @@ def main() -> None:
     eval_p = sub.add_parser("eval", help="Evaluate on test split (eval.py).")
     _add_eval_args(eval_p)
 
-    all_p = sub.add_parser("all", help="Run prepare → train → eval in sequence.")
+    all_p = sub.add_parser("all", help="Run prepare -> train -> eval in sequence.")
     _add_data_args(all_p)
     all_p.add_argument("--output_dir", type=Path, default=Path("results"))
     all_p.add_argument("--wandb_project", default="mlops-assignment2")

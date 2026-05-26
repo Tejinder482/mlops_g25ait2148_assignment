@@ -3,7 +3,7 @@ name = "mlops-g25ait2148-assignment"
 version = "0.1.0"
 description = "MLOps Assignment 2 — Hugging Face fine-tuning, W&B, Hub"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.13"
 dependencies = [
     "transformers>=4.41.0,<5",
     "datasets>=2.19.0",
